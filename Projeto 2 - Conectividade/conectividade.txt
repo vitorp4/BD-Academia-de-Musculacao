@@ -1,0 +1,100 @@
+#include <stdio.h>
+#include <windows.h>
+#include <sql.h>
+#include <sqlext.h>
+#include<sqltypes.h>
+
+void Escrever(SQLHDBC *dbc, char *command)
+{
+    SQLHSTMT stmt;
+    SQLRETURN ret;
+    SQLLEN indicator[3];
+    SQLLEN codigo, preco;
+    SQLCHAR descricao[30] = "";
+    stmt = NULL;
+    int i = 0;
+
+    SQLAllocHandle(SQL_HANDLE_STMT, (*dbc), &stmt);
+    ret = SQLBindCol(stmt,1,SQL_C_LONG,&codigo,0,&indicator[0]);
+    ret = SQLBindCol(stmt,2,SQL_C_LONG,&preco,0,&indicator[1]);
+    ret = SQLBindCol(stmt,3,SQL_C_CHAR,descricao,sizeof(descricao),&indicator[2]);
+    ret = SQLExecDirect(stmt,(SQLCHAR *)command,SQL_NTS);
+
+    printf("Codigo\tPreco\tDescricao\n");
+    
+    while((ret=SQLFetch(stmt)) != SQL_NO_DATA){
+    	printf("%d\t%f\t%s\n", codigo, preco, descricao);
+        i++;
+    }	
+
+    printf("Numero de linhas retornadas: %d\n", i);
+}
+
+void ComandoSQL(SQLHDBC *dbc, char *command)
+{
+    SQLHSTMT stmt;
+    SQLRETURN ret;
+    SQLAllocHandle(SQL_HANDLE_STMT, (*dbc), &stmt);
+    ret = SQLExecDirect(stmt,(SQLCHAR *)command,SQL_NTS);
+}
+
+int main () {
+	
+	char select[100];
+	int escolha;
+    	char str[1000];
+    	SQLHENV env;
+    	SQLHDBC dbc;
+
+   SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+   SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
+   SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
+   SQLDriverConnect(dbc, NULL, (SQLCHAR*)"DSN=conectividade;", SQL_NTS, NULL, 0, NULL, SQL_DRIVER_COMPLETE);
+
+
+	while (1) {
+	    printf("MENU:\n0: Select\n1: Inserir\n2: Update\n3: Delete\n4: Sair\n");
+		printf("Escolha uma opcao: ");
+		scanf(" %d", &escolha);
+		switch (escolha) {
+			case 0:
+				printf("Digite a condicao de selecao sobre a tabela plano: \n");
+				scanf(" %[^\n]", select);
+				sprintf(str, "SELECT * FROM PLANO WHERE %s", select);
+				Escrever(&dbc, str);
+				break;
+
+			case 1:
+				printf("Digite o comando sql de insercao: ");
+                		scanf(" %[^\n]", str);
+                		ComandoSQL(&dbc, str);
+				printf("Atividade de inserir realizada com Sucesso!\n");
+				break;
+
+			case 2:
+				printf("Digite o comando sql de atualizacao: ");
+		                scanf(" %[^\n]", str);
+                		ComandoSQL(&dbc, str);
+				printf("Atividade de atualizar realizada com Sucesso!\n");
+				break;
+
+			case 3:
+				printf("Digite o comando sql de delecao: ");
+        	        	scanf(" %[^\n]", str);
+                		ComandoSQL(&dbc, str);
+				printf("Atividade de deletar realizada com Sucesso!\n");
+				break;
+
+			case 4:
+				printf("Programa Finalizado com Sucesso.\n");
+				return 0;
+				break;
+
+			default:
+				printf("Opcao Invalida. Favo selecionar as opcoes do MENU!\n");
+				break;
+		}
+	}
+	return 0;
+}
+
