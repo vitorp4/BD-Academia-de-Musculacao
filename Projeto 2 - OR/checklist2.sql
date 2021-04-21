@@ -1,7 +1,7 @@
-﻿--	   > 1,5,9,13,17,21,25,28,29
+--     > 1,5,9,13,17,21,25,29
 --prxc > 2,6,10,14,18,22,26,30
 --jvsg > 3,7,11,15,19,23,27
---hlgs > 4,8,12,16,17,20,24,
+--hlgs > 4,8,12,16,20,24,28
 
 --Item 2
 -- Tipo "tp_aluno" na criação possui o atributo "endereco" que é do tipo "tp_endereco"
